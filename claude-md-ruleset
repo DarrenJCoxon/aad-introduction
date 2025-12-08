@@ -1,947 +1,180 @@
-# CLAUDE.md ruleset
+Here is a **generic, template-based version** of the `CLAUDE.md` file. It abstracts the specific technologies (Next.js, Scaleway, etc.) into architectural patterns while maintaining the strict rigor, safety protocols, and structure of your original file.
 
-**Purpose:** Copy these templates into your project to enforce high coding standards when working with Claude Code or other AI coding assistants.
+Please fill in the `{{PLACEHOLDERS}}` with the tech stack appropriate to this project that you can find inside of PRD and/or the architecture documemt inside docs.
 
----
+***
 
-## Quick Start
+# CLAUDE.md - Build Standards & Architecture
 
-1. Copy the **CLAUDE.md Template** to your project root
-2. Copy the **Agent Templates** you need to `.claude/agents/`
-3. Customize for your tech stack
-4. Start coding with consistent quality
+## 1. AI & Inference Strategy (CRITICAL)
 
----
-
-## 1. CLAUDE.md Template (Project Root)
-
-Create `CLAUDE.md` in your project root. This is the master configuration file that AI agents read before any work.
-
-```markdown
-# CLAUDE.md - Development Standards
-
-**Applies To:** All AI Agents working on this project
-
----
-
-## Non-Negotiables
-
-Every agent working on this project MUST follow these standards.
-
----
-
-## 1. Tech Stack Configuration
-
-### Package Manager
-<!-- Customize for your project: pnpm, npm, yarn, bun -->
-**This project uses: `pnpm`**
-
-Correct Commands:
-- `pnpm install` - Install dependencies
-- `pnpm add <package>` - Add new package
-- `pnpm run <script>` - Run package scripts
-
-NEVER Use:
-- `npm install` - Wrong package manager
-- `yarn install` - Wrong package manager
-
-### Framework & Structure
-<!-- Customize for your stack -->
-- Framework: Next.js 14+ (App Router)
-- Language: TypeScript (strict mode)
-- Styling: Tailwind CSS with CSS variables
-- Database: Prisma ORM
-- Auth: NextAuth.js
-
----
-
-## 2. File Organization
-
-```
-project/
-├── app/                      # Next.js App Router
-│   ├── api/                  # API routes
-│   ├── globals.css           # Global styles & CSS variables
-│   └── layout.tsx            # Root layout
-├── components/               # React components
-│   ├── ui/                   # Reusable UI components
-│   └── [feature]/            # Feature-specific components
-├── lib/                      # Utility functions
-│   ├── prisma.ts             # Database client singleton
-│   └── utils.ts              # Helper functions
-├── prisma/
-│   ├── schema.prisma         # Database schema
-│   └── migrations/           # Database migrations
-└── types/                    # TypeScript type definitions
-```
-
-### File Size Limits
-- **React Components:** Max 250 lines
-- **Utility Functions:** Max 150 lines
-- **API Routes:** Max 200 lines
-- **If exceeded:** Split into smaller files
-
----
-
-## 3. Styling Standards
-
-### CSS Variables (Required)
-All colors, spacing, and design tokens MUST be defined in CSS variables.
-
-```css
-/* app/globals.css */
-:root {
-  --background: #FFFFFF;
-  --foreground: #1A1A1A;
-  --muted: #6B7280;
-  --border: #E5E7EB;
-  --accent: #3B82F6;
-
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1A1A1A;
-    --foreground: #F3F4F6;
-  }
-}
-```
-
-### Tailwind Usage
-NEVER hardcode colors:
-- ❌ `className="bg-white text-gray-900"`
-- ✅ `className="bg-background text-foreground"`
-
-NEVER hardcode spacing:
-- ❌ `className="p-4 m-8"`
-- ✅ `className="p-(--spacing-md) m-(--spacing-lg)"`
-
----
-
-## 4. TypeScript Standards
-
-### Type Safety
-- **NEVER use `any`** - Use `unknown` if type is truly unknown
-- All function parameters and return types must be explicitly typed
-- Define interfaces for component props
+Define the model hierarchy to balance cost vs. intelligence. **Do not hallucinate model names.**
 
 ```typescript
-// ❌ WRONG
-function process(data: any) { ... }
-
-// ✅ CORRECT
-function process(data: unknown): ProcessedResult { ... }
+// Example Implementation Pattern
+export const models = {
+  logic: provider.chat('{{HIGH_IQ_MODEL}}'),      // Complex reasoning, code generation
+  fast: provider.chat('{{LOW_LATENCY_MODEL}}'),   // Routing, simple text, classifying
+  embedding: '{{EMBEDDING_MODEL}}',               // Dimensions: {{DIMENSIONS}}
+};
 ```
 
-### Component Props
-```typescript
-interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  disabled?: boolean;
-  onClick?: () => void;
-  children: React.ReactNode;
-}
+**Model Selection Rules:**
+- **Logic Model:** Use for architectural decisions, complex refactoring, and verification.
+- **Fast Model:** Use for simple UI copy, categorization, or initial routing.
+- **Embedding Model:** Must match Vector DB dimensions strictly.
 
-export function Button({ variant = 'primary', ...props }: ButtonProps) {
-  // Implementation
-}
+## 2. Package Management
+
+**System Standard: pnpm**
+- **Strict Rule:** Do not mix npm/yarn/pnpm. Lockfile conflicts break CI/CD.
+- **Command:** `pnpm install | add | run`
+
+## 3. Project Structure & Organization
+
+Maintain separation of concerns. Do not mix business logic inside UI components.
+
+```
+project_root/
+├── src/
+│   ├── {{APP_ROUTER}}/      # Routes/Pages only
+│   ├── components/          # Pure UI components (dumb)
+│   ├── features/            # Feature-specific logic (smart)
+│   ├── lib/                 # Singletons (DB, AI clients, Utils)
+│   └── hooks/               # State logic
+├── {{DB_FOLDER}}/           # Schema & Migrations
+├── docs/                    # Architecture decisions (ADRs) & Specs
+└── public/                  # Static assets
 ```
 
----
+## 4. Tech Stack (Immutable)
 
-## 5. Database Standards
+| Layer | Technology | Region/Constraint | Purpose |
+|-------|------------|-------------------|---------|
+| Frontend | {{FRAMEWORK}} | {{REGION}} | UI & Client Logic |
+| Database | {{DB_PROVIDER}} | {{REGION}} | Relational Data |
+| Vector DB | {{VECTOR_PROVIDER}} | {{REGION}} | Semantic Search |
+| AI Provider | {{AI_PROVIDER}} | {{REGION}} | Inference |
 
-### Schema Modifications (Critical)
-All database changes MUST follow this process:
+## 5. Data Access Layer
 
-1. Modify `prisma/schema.prisma`
-2. Generate migration: `npx prisma migrate dev --name descriptive-name`
-3. Test migration locally
-4. Commit both schema.prisma AND migration files
-5. **NEVER** manually edit migration files after creation
-6. **NEVER** add fields to schema without migrations
+**Connection Rules:**
+- Use connection pooling for Serverless/Edge environments.
+- Use direct connections ONLY for migrations/deployments.
 
-### Prisma Client
-ALWAYS use the singleton client:
+**ORM/Query Builder Standards:**
+1. **Singleton Pattern:** Always import the DB client from a centralized `lib/db` file. Never instantiate a new client inside a route.
+2. **Migrations:**
+   - Commit schema and migration files together.
+   - **NEVER** edit a migration file after it is applied.
+   - **BANNED:** Commands that overwrite schema from DB (e.g., `db pull --force`) without backup.
 
-```typescript
-// lib/prisma.ts
-import { PrismaClient } from '@prisma/client';
-
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({ log: ['error', 'warn'] });
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
-```
-
----
-
-## 6. API Route Standards
-
-### Structure
-```typescript
-// app/api/[resource]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-
-export async function GET(request: NextRequest) {
-  try {
-    // 1. Validate authentication
-    // 2. Parse and validate input
-    // 3. Execute database query
-    // 4. Return response
-    return NextResponse.json({ data: result });
-  } catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json(
-      { error: 'Operation failed' },
-      { status: 500 }
-    );
-  }
-}
-```
-
-### Response Format
-```typescript
-// Success
-{ data: T, message?: string }
-
-// Error
-{ error: string, details?: string }
-```
-
----
-
-## 7. Security Standards
-
-### Data Access Control
-ALWAYS verify user ownership before CRUD operations:
+## 6. Vector Database & RAG
 
 ```typescript
-// ✅ CORRECT: Filter by user
-const notes = await prisma.note.findMany({
-  where: { userId: session.user.id }
+// Configuration Logic
+// MUST match the Embedding Model dimensions exactly
+await vectorDB.createCollection("{{COLLECTION_NAME}}", {
+  vectors: { size: {{DIMENSIONS}}, distance: "Cosine" },
 });
-
-// ❌ WRONG: No user filter
-const notes = await prisma.note.findMany();
 ```
 
-### Environment Variables
-- NEVER commit `.env` to git
-- Maintain `.env.example` with all required variables
-- Never expose API keys in client code
+**Rule:** If the embedding model changes, a full database re-index is required.
 
----
+## 7. Styling & UI Architecture
 
-## 8. Testing Standards
+**Framework:** {{CSS_FRAMEWORK}} / {{UI_LIBRARY}}
 
-### Requirements
-- All new components: Unit tests required
-- All API routes: Integration tests required
-- Co-locate test files: `Button.tsx` + `Button.test.tsx`
+**Rules:**
+1. **Variables:** Use CSS variables for all colors/spacing (theme-able). No hardcoded hex values in components.
+2. **Merging:** Use a utility (like `cn` or `clsx`) to merge tailwind/CSS classes.
+   ```typescript
+   // Correct
+   className={cn("base-styles", condition && "active-styles")}
+   ```
+3. **Colocation:** Keep styles near the component or in a global theme file.
 
-### Test File Organization
-```
-components/
-├── Button.tsx
-└── Button.test.tsx
+## 8. Type Safety & Code Quality
 
-app/api/notes/
-├── route.ts
-└── route.test.ts
-```
+- **Strict Mode:** Enabled.
+- **No `any`:** Use `unknown`, Generics, or specific interfaces.
+- **Generated Types:** Prioritize types generated from the DB Schema (Single Source of Truth).
+- **File Limits:**
+  - Components: < 250 lines (break into sub-components).
+  - Logic/API: < 200 lines (extract services).
 
----
+## 9. API & Security Patterns
 
-## 9. Git Standards
+**Workflow:**
+1. **Authenticate:** Check user session immediately.
+2. **Validate:** Zod/Schema validation on all inputs.
+3. **Execute:** Perform DB/AI operations.
+4. **Error Handle:** Wrap in Try/Catch and return standardized error objects.
 
-### Commit Messages
-- Write clear, descriptive messages
-- Prefix with context: `[Feature] Add user authentication`
-
-### Branch Strategy
-- `main` branch is production-ready
-- Feature branches: `feature/feature-name`, `fix/bug-name`
-- NEVER push directly to `main` - use Pull Requests
-
-### Destructive Commands - BANNED
-The following commands are PERMANENTLY BANNED:
-
-- ❌ `git reset --hard` - DESTROYS uncommitted work
-- ❌ `git clean -fd` - DELETES untracked files
-- ❌ `git push --force` to main - Destroys team's work
-- ❌ `git checkout .` - Discards all changes
-
-Safe alternatives:
-```bash
-# Keep changes as uncommitted
-git reset --soft HEAD~1
-
-# Temporarily save work
-git stash
-
-# Unstage files but keep changes
-git reset HEAD <file>
-```
-
-**MANDATORY: If unsure about a git command, ASK USER FIRST.**
-
----
-
-## 10. Code Quality Checklist
-
-Before marking work as complete, verify:
-
-- [ ] No hardcoded colors or spacing values
-- [ ] All CSS uses variables from `globals.css`
-- [ ] No `any` types in TypeScript
-- [ ] All components under 250 lines
-- [ ] Database migrations generated and committed
-- [ ] API routes have error handling
-- [ ] Components have proper TypeScript interfaces
-- [ ] Tests written for new functionality
-- [ ] No console.logs in production code
-- [ ] All imports use `@/` alias
-
----
-
-## 11. Common Pitfalls
-
-### ❌ NEVER DO THIS:
 ```typescript
-// Hardcoded colors
-<div className="bg-white text-black">
-
-// Using 'any'
-function process(data: any) {
-
-// Multiple PrismaClient instances
-const prisma = new PrismaClient();
-
-// No error handling
-export async function GET() {
-  const data = await prisma.note.findMany();
-  return NextResponse.json(data);
+// Pattern
+export async function action(input: InputType) {
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+  
+  // ... logic
 }
 ```
 
-### ✅ ALWAYS DO THIS:
-```typescript
-// CSS variables
-<div className="bg-background text-foreground">
+## 10. Data Sovereignty & Compliance
 
-// Proper typing
-function process(data: unknown) {
+**Region Lock:** {{ALLOWED_REGIONS}}
+- **Constraint:** No user data may leave the defined region(s).
+- **AI Processing:** Ensure the AI inference endpoint is hosted within the compliance zone.
 
-// Singleton client
-import { prisma } from '@/lib/prisma';
+## 11. Git & Version Control
 
-// Error handling
-export async function GET() {
-  try {
-    const data = await prisma.note.findMany();
-    return NextResponse.json({ data });
-  } catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
-  }
+**BANNED COMMANDS:**
+- `git reset --hard` (unless explicitly authorized for cleanup)
+- `git clean -fd`
+- `git push --force` on shared branches
+
+**Workflow:**
+- Feature Branch (`feat/name`) -> Pull Request -> Main.
+- Commit messages must be descriptive.
+
+## 12. Version Pinning
+
+Keep core infrastructure stable.
+
+```json
+{
+  "{{FRAMEWORK}}": "{{VERSION}}",
+  "{{DB_CLIENT}}": "latest",
+  "{{AI_SDK}}": "latest"
 }
 ```
 
----
+## 13. Quick Reference
 
-## 12. When Uncertain
+| Do | Don't |
+|---|---|
+| Use `pnpm` | Use `npm` or `yarn` mixed |
+| Import singletons (`lib/`) | `new Client()` in routes |
+| Use CSS Variables | Hardcode Hex codes |
+| `git reset --soft` | `git reset --hard` |
+| Validate inputs (Zod) | Trust client inputs |
+| Check Auth first | Run logic then check Auth |
 
-If ANY standard is unclear or conflicts with requirements:
+## 14. Environment Variables
 
-1. STOP implementation immediately
-2. Document the specific conflict
-3. Ask for clarification
-4. DO NOT proceed with assumptions
+Ensure these are set in `.env.local` and CI/CD:
 
----
+```env
+# Database
+DATABASE_URL=
+DIRECT_URL=
 
-**Remember:** These standards ensure high-quality, maintainable code. Following them is not optional.
+# AI & Vector
+AI_API_KEY=
+VECTOR_DB_URL=
+VECTOR_DB_KEY=
+
+# Auth
+AUTH_SECRET=
 ```
-
----
-
-## 2. Agent Templates
-
-Create these in `.claude/agents/` folder. Each agent specializes in a specific role.
-
-### 2.1 Scrum Master Agent
-
-`.claude/agents/scrum-master.md`
-
-```markdown
----
-name: scrum-master
-description: Creates implementation-ready user stories from requirements
-model: opus
----
-
-You are a Scrum Master agent that creates detailed, implementation-ready user stories.
-
-## Your Responsibilities
-
-1. **Read requirements** from docs/ folder
-2. **Create story files** at `docs/stories/{story-number}.{description}.md`
-3. **Populate all sections** with precision
-
-## Story File Template
-
-```markdown
-# [Epic.Story] Story Title
-
-**Status:** Draft
-**Priority:** High/Medium/Low
-**Estimate:** X days
-
-## User Story
-As a [user type]
-I want [goal]
-So that [benefit]
-
-## Acceptance Criteria
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
-
-## Tasks
-- [ ] Task 1: Create [component] at [path]
-- [ ] Task 2: Implement [feature]
-- [ ] Task 3: Write tests for [component]
-
-## Dev Notes
-<!-- CRITICAL: Include ALL information developers need -->
-
-### File Paths
-- Create: `components/Feature.tsx`
-- Modify: `app/api/route.ts`
-
-### Technical Requirements
-- Use existing patterns from [file]
-- Follow CLAUDE.md styling standards
-- Database changes require migrations
-
-### API Contracts
-- Endpoint: POST /api/resource
-- Request: { field: string }
-- Response: { data: Resource }
-
-## Testing Requirements
-- Unit tests for components
-- Integration tests for API routes
-```
-
-## Critical Rules
-
-- Copy User Story and Acceptance Criteria exactly from requirements
-- Break tasks into chunks under 4 hours each
-- Dev Notes must be comprehensive - developers should NOT need other docs
-- Always set initial status to "Draft"
-- Include specific file paths, not generic descriptions
-```
-
-### 2.2 Story Implementer Agent
-
-`.claude/agents/story-implementer.md`
-
-```markdown
----
-name: story-implementer
-description: Implements approved user stories with code and tests
-model: opus
----
-
-You are a Developer Agent that implements approved user stories with precision.
-
-## Operational Requirements
-
-### 1. Status Verification
-Before ANY work, verify story status is "Approved". If not, STOP and inform user.
-
-### 2. Scope Boundary
-Your ONLY source of truth is the story file. NEVER:
-- Reference external documents
-- Add features not specified
-- Make assumptions beyond story content
-
-### 3. Testing Requirement (CRITICAL)
-**EVERY new file MUST have accompanying tests.**
-
-For EACH new file:
-1. Create the file
-2. IMMEDIATELY create its test file
-3. Write tests covering happy paths, edge cases, errors
-4. Run tests: `pnpm test -- filename.test.tsx --run`
-5. Ensure 100% pass rate before continuing
-
-### 4. File Tracking
-Maintain complete list of EVERY file created or modified:
-
-```
-## Files Created:
-- path/to/Component.tsx
-- path/to/Component.test.tsx
-
-## Files Modified:
-- path/to/existing.ts
-```
-
-## Implementation Workflow
-
-### Phase 1: Validation
-1. Verify status is "Approved"
-2. Read entire story file
-3. Identify all Tasks, Dev Notes, Acceptance Criteria
-4. Confirm understanding before coding
-
-### Phase 2: Implementation
-- Execute tasks sequentially
-- Follow Dev Notes exactly
-- Create tests for every new file
-- Track all file changes
-
-### Phase 3: Quality Assurance
-Before marking complete:
-- [ ] All tasks marked complete
-- [ ] Code follows Dev Notes specifications
-- [ ] Test files exist for all new code
-- [ ] All tests passing
-- [ ] File list complete and accurate
-
-### Phase 4: Completion
-1. Change status from "Approved" to "Review"
-2. Document Dev Agent Record:
-
-```markdown
-## Dev Agent Record
-- Implementation Date: [date]
-- All tasks completed: ✓
-- All tests passing: ✓
-
-### Files Created:
-- path/to/file.tsx
-- path/to/file.test.tsx
-
-### Files Modified:
-- path/to/existing.ts
-
-### Test Results:
-- Total tests: X
-- Passing: X
-- Failing: 0
-```
-
-## Decision Framework
-
-**Proceed when:**
-- Story status is "Approved"
-- Requirements are clear
-- Dev Notes provide sufficient guidance
-
-**Ask for clarification when:**
-- Task description is ambiguous
-- Dev Notes missing critical info
-- Acceptance criteria incomplete
-
-**Stop when:**
-- Story status not "Approved"
-- Asked to implement features not in story
-- Tests cannot pass due to story issues
-```
-
-### 2.3 QA Validator Agent
-
-`.claude/agents/qa-validator.md`
-
-```markdown
----
-name: qa-validator
-description: Validates completed stories meet all acceptance criteria
-model: opus
----
-
-You are a QA Engineer that validates completed work before marking as Done.
-
-## Prerequisites
-
-- Story status MUST be "Review"
-- You need: story file + list of changed files
-
-## Review Process
-
-### Step 1: Gather Context
-1. Confirm story status is "Review"
-2. Get list of all changed files
-3. Read Acceptance Criteria thoroughly
-
-### Step 2: Code Quality Review
-
-**Check for:**
-- Readability and maintainability
-- Adherence to CLAUDE.md standards
-- Proper error handling
-- No hardcoded values (colors, spacing)
-- No `any` types
-- Components under 250 lines
-
-**Security:**
-- Input validation
-- Authentication checks on protected routes
-- No exposed secrets
-
-**Testing:**
-- Test files exist for new code
-- Tests were actually run (check Dev Agent Record)
-- All tests pass
-
-### Step 3: Acceptance Criteria Validation
-
-For EACH criterion:
-1. Identify code that addresses it
-2. Verify implementation fully satisfies requirement
-3. Mark as ✅ PASS or ❌ FAIL with explanation
-
-### Step 4: Document Findings
-
-Append to story file:
-
-```markdown
-## QA Results
-
-### Review Date: [Date]
-
-#### Acceptance Criteria Validation:
-1. [Criterion 1]: ✅ PASS / ❌ FAIL
-   - Evidence: [code references]
-   - Notes: [observations]
-
-2. [Criterion 2]: ✅ PASS / ❌ FAIL
-   - Evidence: [code references]
-   - Notes: [observations]
-
-#### Code Quality Assessment:
-- **Standards Compliance**: [Assessment]
-- **Security**: [Assessment]
-- **Testing**: [Assessment]
-
-#### Issues Identified:
-- [ ] Issue 1: [Description]
-- [ ] Issue 2: [Description]
-
-#### Final Decision:
-[Pass/Fail and status change]
-```
-
-### Step 5: Set Final Status
-
-**If ALL criteria met:**
-- Change status to "Done"
-- State: "✅ All Acceptance Criteria validated. Story marked as DONE."
-
-**If issues remain:**
-- Keep status as "Review"
-- Provide actionable checklist of fixes needed
-- State: "⚠️ Issues identified. Story remains in REVIEW."
-
-## Quality Standards
-
-- Focus on meaningful issues, not nitpicks
-- Provide specific file names and line numbers
-- Explain WHY something is a problem
-- Offer concrete fix suggestions
-```
-
-### 2.4 Full-Stack Debugger Agent
-
-`.claude/agents/debugger.md`
-
-```markdown
----
-name: debugger
-description: Debugs issues across all layers of the application stack
-model: opus
----
-
-You are a full-stack debugging specialist investigating issues across frontend, backend, database, and infrastructure.
-
-## CRITICAL: Mandatory First Checks
-
-When debugging production vs development issues, ALWAYS verify:
-
-### 1. Deployment Status
-- Is the code actually deployed to production?
-- Run: `git log origin/main..HEAD` to find undeployed commits
-- Check: Has feature branch been merged to main?
-
-### 2. Database Schema
-- Are all migrations applied in production?
-- Run: `npx prisma migrate status`
-- Compare schema between dev and production
-
-### 3. Environment Variables
-- Do env vars match between dev and production?
-- Check deployment platform configuration
-- Verify database URLs and connection strings
-
-**DO NOT assume "code problem" until infrastructure is verified.**
-
-## Investigation Checklist
-
-### Frontend Layer
-- Browser console errors
-- Network requests (failed, CORS, timeouts)
-- Client-side state issues
-
-### Backend/API Layer
-- Server logs and error traces
-- Request/response payloads
-- Authentication flows
-- Memory usage
-
-### Database Layer
-- Query performance
-- Connection pool status
-- Lock contention
-- Missing indexes
-
-### Infrastructure Layer
-- Server resources (CPU, memory)
-- Container health
-- SSL/TLS issues
-- CDN/caching behavior
-
-### Configuration
-- Environment variable differences
-- Feature flags
-- Build process issues
-
-## Output Format
-
-```markdown
-## Issue Summary
-[Brief description]
-
-## Mandatory Checks Performed
-
-**Deployment Status:**
-- Checked: Feature deployed to production? [YES/NO]
-- Result: [Findings]
-
-**Database Schema:**
-- Checked: Migrations applied in production? [YES/NO]
-- Result: [Findings]
-
-**Environment Configuration:**
-- Checked: Env vars match? [YES/NO]
-- Result: [Findings]
-
-## Investigation Findings
-
-### Frontend
-[Findings or "No issues detected"]
-
-### Backend/API
-[Findings or "No issues detected"]
-
-### Database
-[Findings or "No issues detected"]
-
-### Infrastructure
-[Findings or "No issues detected"]
-
-## Root Cause Analysis
-[Diagnosis]
-
-## Recommended Solutions
-
-### Immediate Fix
-[Steps to resolve]
-
-### Long-term Prevention
-[Improvements to prevent recurrence]
-```
-
-## Key Behaviors
-
-- Never assume obvious without verification
-- Check multiple stack layers even if one seems at fault
-- Consider timing, race conditions, edge cases
-- Think about scale - issues only at load
-- Validate assumptions with concrete evidence
-```
-
----
-
-## 3. Story Template
-
-Create `docs/story-template.md` for consistent story format:
-
-```markdown
-# [Epic.Story] Story Title
-
-**Status:** Draft | Approved | InProgress | Review | Done
-**Priority:** Critical | High | Medium | Low
-**Estimate:** X days
-
----
-
-## User Story
-
-As a [type of user]
-I want [goal/desire]
-So that [benefit/value]
-
----
-
-## Acceptance Criteria
-
-- [ ] AC1: [Specific, testable criterion]
-- [ ] AC2: [Specific, testable criterion]
-- [ ] AC3: [Specific, testable criterion]
-
----
-
-## Tasks
-
-- [ ] Task 1: [Action] at [file path]
-- [ ] Task 2: [Action] at [file path]
-- [ ] Task 3: Write tests for [component]
-- [ ] Task 4: Update [documentation/types]
-
----
-
-## Dev Notes
-
-### File Paths
-**Create:**
-- `path/to/NewComponent.tsx`
-- `path/to/NewComponent.test.tsx`
-
-**Modify:**
-- `path/to/existing.ts`
-
-### Technical Requirements
-- [Pattern to follow]
-- [Library to use]
-- [Standard to apply]
-
-### API Contracts (if applicable)
-```
-Endpoint: METHOD /api/path
-Request: { field: type }
-Response: { data: type }
-```
-
-### Database Changes (if applicable)
-```bash
-npx prisma migrate dev --name migration-name
-```
-
----
-
-## Testing Requirements
-
-- [ ] Unit tests for [components]
-- [ ] Integration tests for [API routes]
-- [ ] Edge cases: [list]
-
----
-
-## Dependencies
-
-- Depends on: [Story X.Y]
-- Blocks: [Story X.Y]
-
----
-
-## Dev Agent Record
-<!-- Filled by developer agent after implementation -->
-
----
-
-## QA Results
-<!-- Filled by QA agent after review -->
-```
-
----
-
-## 4. Usage Guide
-
-### For New Projects
-
-1. **Create CLAUDE.md** in project root
-   - Customize tech stack section
-   - Add project-specific standards
-
-2. **Create `.claude/agents/`** folder
-   - Add agent templates you need
-   - Customize for your workflow
-
-3. **Create `docs/stories/`** folder
-   - Use story template for new work
-
-### Workflow
-
-```
-1. Scrum Master creates story → Status: Draft
-2. Team reviews and approves → Status: Approved
-3. Developer implements → Status: Review
-4. QA validates → Status: Done
-```
-
-### Invoking Agents
-
-When using Claude Code, reference agents by name:
-- "Use the scrum-master agent to create a story for..."
-- "Use the story-implementer agent to build this feature..."
-- "Use the qa-validator agent to review this story..."
-- "Use the debugger agent to investigate this issue..."
-
----
-
-## 5. Customization Tips
-
-### Adapt for Your Stack
-
-**React Native:**
-- Change file organization for mobile structure
-- Update styling to use StyleSheet or styled-components
-
-**Vue/Nuxt:**
-- Adjust component patterns for Vue SFCs
-- Update imports and file extensions
-
-**Python/Django:**
-- Replace Prisma with Django ORM patterns
-- Update test framework to pytest
-
-**Different Package Managers:**
-- Replace `pnpm` with your choice
-- Update all command examples
-
-### Add Project-Specific Rules
-
-Add sections for:
-- Specific libraries (e.g., "Always use date-fns, never moment.js")
-- API patterns (e.g., "All endpoints must return pagination metadata")
-- Naming conventions (e.g., "Use kebab-case for file names")
-- Deployment requirements
-
----
-
-**Last Updated:** December 2024
-**License:** MIT - Use freely in your projects
