@@ -4687,7 +4687,7 @@ sections:
       - Cross Cutting Concerns should flow through epics and stories and not be final stories. For example, adding a logging framework as a last story of an epic, or at the end of a project as a final epic or story would be terrible as we would not have logging from the beginning.
     elicit: true
     examples:
-      - "Epic 1: Foundation & Core Infrastructure: Establish project setup, authentication, and basic user management"
+      - "Epic 1: Foundation & Core Infrastructure: Establish project setup, authentication, and basic user management.This MUST include adding a .env.example and .env.local files in the appropriate place in the directory with appropriate explanation as to the environment variables that the project requires."
       - "Epic 2: Core Business Entities: Create and manage primary domain objects with CRUD operations"
       - "Epic 3: User Workflows & Interactions: Enable key user journeys and business processes"
       - "Epic 4: Reporting & Analytics: Provide insights and data visualization for users"
